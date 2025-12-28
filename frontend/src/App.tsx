@@ -31,7 +31,7 @@ const WobbleSphere = () => {
   const mesh = useRef(null);
   const materialRef = useRef(null);
 
-  const handData = useRef({ strength: 0.3 });
+  const handData = useRef({ strength: 0.3, colorPos: 0 });
 
   useEffect(() => {
     const socket: Socket = io("http://localhost:3000");
@@ -39,6 +39,10 @@ const WobbleSphere = () => {
     socket.on("td-data", (data: OSCRelayData) => {
       if (data.address === "/handY") {
         handData.current.strength = data.value;
+      }
+
+      if (data.address === "/palmRX") {
+        handData.current.colorPos = data.value;
       }
     });
 
@@ -103,6 +107,21 @@ const WobbleSphere = () => {
 
       const targetStrength = handData.current?.strength || 0.3;
       materialRef.current.uniforms.uStrength.value = targetStrength;
+
+      // 2. Update Color Blend (Right Hand)
+      // We use the colorPos to mix uColorA and uColorB
+      // If you are using a shader that already mixes these,
+      // just pass uColorMix to your shader as a uniform.
+      const colorA = new THREE.Color(uColorA);
+      const colorB = new THREE.Color(uColorB);
+
+      // This creates a resulting color based on the right hand position
+      const finalColor = new THREE.Color().lerpColors(
+        colorA,
+        colorB,
+        handData.current.colorPos * 3,
+      );
+      materialRef.current.uniforms.uFinalColor.value = finalColor;
     }
   });
 
@@ -134,6 +153,7 @@ const WobbleSphere = () => {
           uWarpStrenght: { value: uWarpStrenght },
           uColorA: { value: new THREE.Color(uColorA) },
           uColorB: { value: new THREE.Color(uColorB) },
+          uFinalColor: { value: new THREE.Color("#ff0000") },
         }}
       />
     </mesh>
