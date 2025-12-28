@@ -31,15 +31,14 @@ const WobbleSphere = () => {
   const mesh = useRef(null);
   const materialRef = useRef(null);
 
-  const handData = useRef({ distortion: 0 });
+  const handData = useRef({ strength: 0.3 });
 
   useEffect(() => {
     const socket: Socket = io("http://localhost:3000");
 
     socket.on("td-data", (data: OSCRelayData) => {
-      if (data.address === "/pinch") {
-        console.log(handData?.current);
-        handData.current.distortion = data.value;
+      if (data.address === "/handY") {
+        handData.current.strength = data.value;
       }
     });
 
@@ -59,7 +58,7 @@ const WobbleSphere = () => {
     // uniforms
     uPositionFrequency,
     uTimeFrequency,
-    uStrenght,
+    // uStrength,
     uWarpPositionFrequency,
     uWarpTimeFrequency,
     uWarpStrenght,
@@ -77,7 +76,7 @@ const WobbleSphere = () => {
     // uniforms
     uPositionFrequency: { value: 0.5, min: 0, max: 2, step: 0.001 },
     uTimeFrequency: { value: 0.4, min: 0, max: 2, step: 0.001 },
-    uStrenght: { value: 0.3, min: 0, max: 2, step: 0.001 },
+    // uStrength: { value: 0.3, min: 0, max: 2, step: 0.001 },
     uWarpPositionFrequency: { value: 0.38, min: 0, max: 2, step: 0.001 },
     uWarpTimeFrequency: { value: 0.12, min: 0, max: 2, step: 0.001 },
     uWarpStrenght: { value: 1.7, min: 0, max: 2, step: 0.001 },
@@ -101,6 +100,9 @@ const WobbleSphere = () => {
   useFrame((state) => {
     if (materialRef.current) {
       materialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
+
+      const targetStrength = handData.current?.strength || 0.3;
+      materialRef.current.uniforms.uStrength.value = targetStrength;
     }
   });
 
@@ -126,7 +128,7 @@ const WobbleSphere = () => {
           uTime: { value: 0 },
           uPositionFrequency: { value: uPositionFrequency },
           uTimeFrequency: { value: uTimeFrequency },
-          uStrenght: { value: uStrenght },
+          uStrength: { value: 0.3 },
           uWarpPositionFrequency: { value: uWarpPositionFrequency },
           uWarpTimeFrequency: { value: uWarpTimeFrequency },
           uWarpStrenght: { value: uWarpStrenght },

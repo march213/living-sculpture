@@ -5,7 +5,7 @@ attribute vec4 tangent;
 uniform float uTime;
 uniform float uPositionFrequency;
 uniform float uTimeFrequency;
-uniform float uStrenght;
+uniform float uStrength;
 uniform float uWarpPositionFrequency;
 uniform float uWarpTimeFrequency;
 uniform float uWarpStrenght;
@@ -23,7 +23,7 @@ float getWobble(vec3 position) {
     return simplexNoise4d(vec4(
             warpedPosition * uPositionFrequency, // XYZ
             uTime * uTimeFrequency // W
-        )) * uStrenght;
+        )) * uStrength;
     ;
 }
 
@@ -47,6 +47,6 @@ void main() {
     csm_Normal = cross(toA, toB);
 
     // varyings
-    // vWobble = wobble / uStrenght;
-    vWobble = wobble / uStrenght;
+    // vWobble = wobble / uStrength;
+    vWobble = wobble / uStrength;
 }
