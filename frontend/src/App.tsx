@@ -7,8 +7,11 @@ import { mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 import wobbleVertexShader from "./shaders/wobble/vertex.glsl";
 import wobbleFragmentShader from "./shaders/wobble/fragment.glsl";
+import { type OSCRelayData } from "./types";
 
-import { useMemo, useRef } from "react";
+import { io, Socket } from "socket.io-client";
+
+import { useEffect, useMemo, useRef } from "react";
 
 function App() {
   return (
@@ -27,6 +30,23 @@ const WobbleSphere = () => {
   // This reference will give us direct access to the mesh
   const mesh = useRef(null);
   const materialRef = useRef(null);
+
+  const handData = useRef({ distortion: 0 });
+
+  useEffect(() => {
+    const socket: Socket = io("http://localhost:3000");
+
+    socket.on("td-data", (data: OSCRelayData) => {
+      if (data.address === "/pinch") {
+        console.log(handData?.current);
+        handData.current.distortion = data.value;
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   const {
     metalness,
